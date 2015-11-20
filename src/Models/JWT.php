@@ -55,12 +55,13 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        $secret    = \Phramework\Phramework::getSetting('jwt', 'secret');
-        $algorithm = \Phramework\Phramework::getSetting('jwt', 'algorithm');
+        $settings = \Phramework\Phramework::getSetting('jwt');
+        $secret     = $settings['secret'];
+        $algorithm  = $settings['algorithm'];
 
         try {
 
-            $token = \Firebase\JWT\JWT::decode($jwt, $secretKey, [$algorithm]);
+            $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
 
             return [];
         } catch (Exception $e) {
@@ -96,10 +97,10 @@ class JWT extends \Phramework\Models\Authentication
 
         header('Content-type: application/json');
 
-        $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');
-        $algorithm  = \Phramework\Phramework::getSetting('jwt', 'algorithm');
-
-        $serverName = \Phramework\Phramework::getSetting('jwt', 'server');
+        $settings = \Phramework\Phramework::getSetting('jwt');
+        $secret     = $settings['secret'];
+        $algorithm  = $settings['algorithm'];
+        $serverName = $settings['server'];
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
@@ -123,7 +124,7 @@ class JWT extends \Phramework\Models\Authentication
 
         $jwt = \Firebase\JWT\JWT::encode(
             $data,      //Data to be encoded in the JWT
-            $secretKey, // The signing key
+            $secret, // The signing key
             $algorithm  // Algorithm used to sign the token, see https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40#section-3
         );
 
