@@ -67,7 +67,7 @@ class JWT extends \Phramework\Models\Authentication
              * this is likely because the signature was not able to be verified (tampered token)
              */
 //            header('HTTP/1.0 401 Unauthorized');
-            return false
+            return false;
         }
 
         //read from token
@@ -91,7 +91,7 @@ class JWT extends \Phramework\Models\Authentication
         if (!password_verify($password, $user['password'])) {
             return false;
         }
-        
+
         header('Content-type: application/json');
 
         $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');

@@ -4,7 +4,7 @@ namespace Phramework\JWT\Models;
 
 use \Phramework\Phramework;
 
-class SystemLog extends \PHPUnit_Framework_TestCase
+class JWT extends \PHPUnit_Framework_TestCase
 {
 
     private $object;
@@ -16,7 +16,6 @@ class SystemLog extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $object = new SystemLog();
     }
 
     /**
