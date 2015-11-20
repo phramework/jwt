@@ -19,7 +19,7 @@ namespace Phramework\JWT\Models;
 
 class JWT extends \Phramework\Models\Authentication
 {
-    protected $getUserByEmail = null;
+    protected static $getUserByEmail = null;
 
     /**
      * Set the method that accepts email and returns a user object
