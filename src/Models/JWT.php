@@ -49,7 +49,7 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        list($jwt) = sscanf($headers['Authorization'], 'Authorization: Bearer %s');
+        list($jwt) = sscanf($headers['Authorization'], 'Bearer %s');
 
         if (!$jwt) {
             return false;
@@ -104,8 +104,8 @@ class JWT extends \Phramework\Models\Authentication
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
-        $notBefore  = $issuedAt + 10;  //Adding 10 seconds
-        $expire     = $notBefore + 60; // Adding 60 seconds
+        $notBefore  = $issuedAt + 1;  //Adding 10 seconds
+        $expire     = $notBefore + 600; // Adding 60 seconds
 
         /*
         * Create the token as an array
