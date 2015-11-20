@@ -21,11 +21,10 @@
     "php": ">=5.6",
     "phramework/phramework": "dev-master",
     "ext-json": "*",
-    "firebase/php-jwt": "^1.0.0"
+    "firebase/php-jwt": "^3.0"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "*",
-    "phpunit/phpunit": "5.*"
+    "squizlabs/php_codesniffer": "*"
   },
   "minimum-stability": "alpha",
   "prefer-stable": true,

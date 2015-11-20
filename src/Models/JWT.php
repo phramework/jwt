@@ -17,6 +17,8 @@
 
 namespace Phramework\JWT\Models;
 
+use \Phramework\Validate\Validate;
+
 class JWT extends \Phramework\Models\Authentication
 {
     protected static $getUserByEmail = null;
@@ -58,7 +60,7 @@ class JWT extends \Phramework\Models\Authentication
 
         try {
 
-            $token = JWT::decode($jwt, $secretKey, [$algorithm]);
+            $token = \Firebase\JWT\JWT::decode($jwt, $secretKey, [$algorithm]);
 
             return [];
         } catch (Exception $e) {
@@ -82,7 +84,7 @@ class JWT extends \Phramework\Models\Authentication
 
         $email = Validate::email($email);
 
-        $user = self::$getUserByEmail($email);
+        $user = call_user_func(self::$getUserByEmail, $email);
 
         if (!$user) {
             return false;
@@ -99,7 +101,7 @@ class JWT extends \Phramework\Models\Authentication
 
         $serverName = \Phramework\Phramework::getSetting('jwt', 'server');
 
-        $tokenId    = base64_encode(mcrypt_create_iv(32));
+        $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
         $notBefore  = $issuedAt + 10;  //Adding 10 seconds
         $expire     = $notBefore + 60; // Adding 60 seconds
@@ -119,14 +121,13 @@ class JWT extends \Phramework\Models\Authentication
             ]
         ];
 
-        $jwt = JWT::encode(
+        $jwt = \Firebase\JWT\JWT::encode(
             $data,      //Data to be encoded in the JWT
             $secretKey, // The signing key
             $algorithm  // Algorithm used to sign the token, see https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40#section-3
         );
 
         $unencodedArray = ['jwt' => $jwt];
-
 
         echo json_encode($unencodedArray);
 
