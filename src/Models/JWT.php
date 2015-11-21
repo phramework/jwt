@@ -137,7 +137,7 @@ class JWT extends \Phramework\Models\Authentication
 
         try {
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
-
+            
             return $token->data;
         } catch (\Exception $e) {
             /*
