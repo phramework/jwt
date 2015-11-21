@@ -10,7 +10,7 @@ jwt authentication for Phramework
 );
 
 //Set method to fetch user object, including password attribute
-\Phramework\JWT\Models\JWT::setGetUserByEmail(
+\Phramework\JWT\Models\JWT::setUserGetByEmailMethod(
     [\MyApp\API\Models\User::class, 'getByEmailWithPassword']
 );
 

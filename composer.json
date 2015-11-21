@@ -23,7 +23,8 @@
     "phramework/phramework": "dev-master",
     "ext-json": "*",
     "ext-mcrypt": "*",
-    "firebase/php-jwt": "^3.0"
+    "firebase/php-jwt": "^3.0",
+    "lcobucci/jwt": "^3.1"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "*",

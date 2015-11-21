@@ -10,6 +10,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
 
     public static function getByEmailWithPassword($email)
     {
+        //Search in defiened users by email
         $users = array_filter(
             self::$users,
             function ($user) use ($email) {
@@ -17,7 +18,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
             }
         );
 
-        if (!count($users)) {
+        if (count($users) == 0) {
             return false;
         }
 
@@ -67,7 +68,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         );
 
         //Set method to fetch user object, including password attribute
-        JWT::setGetUserByEmail(
+        JWT::setUserGetByEmailMethod(
             [JWTTest::class, 'getByEmailWithPassword']
         );
 
@@ -147,7 +148,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     public function testAuthenticateSuccess()
     {
         //Pick a random user index
-        $index = rand(0, count(self::$users) - 1);
+        $index = 0; //rand(0, count(self::$users) - 1);
 
         $token = JWT::authenticate(
             self::$users[$index]['email'],
@@ -174,7 +175,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertInternalType('object', $user, 'Expect an object');
-        
+
         $this->assertObjectHasAttribute('id', $user);
         $this->assertObjectHasAttribute('email', $user);
         $this->assertObjectHasAttribute('user_type', $user);

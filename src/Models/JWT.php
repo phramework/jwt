@@ -21,15 +21,26 @@ use \Phramework\Validate\Validate;
 
 /**
  * JWT authentication implementation for phramework
+ * Defined settings:
+ * - jwt[]
+ *   - secret
+ *   - server Server's name
+ *   - algorithm
+ *   - [nbf] Not before offset in seconds, default 0
+ *   - [exp] Expiration offset in seconds, default 3600
  * @license https://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
  * @author Spafaridis Xenophon <nohponex@gmail.com>
+ * @uses \Firebase\JWT\JWT
+ * @uses password_verify to verify user's password
+ *
  */
 class JWT extends \Phramework\Models\Authentication
 {
     /**
+     * MUST be set
      * @var callable
      */
-    protected static $getUserByEmail = null;
+    protected static $userGetByEmailMethod = null;
 
     /**
      * @var string[]
@@ -37,7 +48,7 @@ class JWT extends \Phramework\Models\Authentication
     protected static $attributes = [];
 
     /**
-     * @var callable
+     * @var callable|null
      */
     protected static $onAuthenticateCallback = null;
 
@@ -45,16 +56,15 @@ class JWT extends \Phramework\Models\Authentication
      * Set the method that accepts email and returns a user object
      * MUST containg a password, id, this method MUST also contain any other
      * attribute specified in JWT::setAttributes method
-     * Method `array method($email)`
      * @param callable $callable
      */
-    public static function setGetUserByEmail($callable)
+    public static function setUserGetByEmailMethod($callable)
     {
         if (!is_callable($callable)) {
             throw new \Exception('Provided method is not callable');
         }
 
-        self::$getUserByEmail = $callable;
+        self::$userGetByEmailMethod = $callable;
     }
 
     /**
@@ -122,9 +132,8 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        $settings = \Phramework\Phramework::getSetting('jwt');
-        $secret     = $settings['secret'];
-        $algorithm  = $settings['algorithm'];
+        $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');
+        $algorithm  = \Phramework\Phramework::getSetting('jwt', 'algorithm');
 
         try {
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
@@ -148,7 +157,7 @@ class JWT extends \Phramework\Models\Authentication
      */
     public static function authenticate($email, $password)
     {
-        if (!self::$getUserByEmail) {
+        if (!self::$userGetByEmailMethod) {
             throw new \Phramework\Exceptions\ServerException(
                 'getUserByEmail is not set'
             );
@@ -156,7 +165,7 @@ class JWT extends \Phramework\Models\Authentication
 
         $email = Validate::email($email);
 
-        $user = call_user_func(self::$getUserByEmail, $email);
+        $user = call_user_func(self::$userGetByEmailMethod, $email);
 
         if (!$user) {
             return false;
@@ -166,26 +175,29 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        $settings = \Phramework\Phramework::getSetting('jwt');
-        $secret     = $settings['secret'];
-        $algorithm  = $settings['algorithm'];
-        $serverName = $settings['server'];
+        $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');
+        $algorithm  = \Phramework\Phramework::getSetting('jwt', 'algorithm');
+        $serverName = \Phramework\Phramework::getSetting('jwt', 'server');
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
-        $notBefore  = $issuedAt + 0;  //Adding seconds
-        $expire     = $notBefore + 600; // Adding seconds
+        //Adding seconds
+        $notBefore  = $issuedAt
+            + \Phramework\Phramework::getSetting('jwt', 'nbf', 0);
+        //Adding seconds
+        $expire     = $notBefore
+            + \Phramework\Phramework::getSetting('jwt', 'exp', 3600);
 
         /*
          * Create the token as an array
         */
         $data = [
-            'iat'  => $issuedAt,         // Issued at: time when the token was generated
-            'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
-            'iss'  => $serverName,       // Issuer
-            'nbf'  => $notBefore,        // Not before
-            'exp'  => $expire,           // Expire
-            'data' => [                  // Data related to the signer user
+            'iat'  => $issuedAt,  // Issued at: time when the token was generated
+            'jti'  => $tokenId,   // Json Token Id: an unique identifier for the token
+            'iss'  => $serverName,// Issuer
+            'nbf'  => $notBefore, // Not before
+            'exp'  => $expire,    // Expire
+            'data' => [           // Data related to the signer user
                 'id' => $user['id']
             ]
         ];
