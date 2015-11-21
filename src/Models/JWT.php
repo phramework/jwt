@@ -83,9 +83,31 @@ class JWT extends \Phramework\Models\Authentication
     }
 
     /**
+     * Test if current request holds authoratation data
      * @param  array  $params  Request parameters
      * @param  string $method  Request method
-     * @param  array $headers  Request headers
+     * @param  array  $headers  Request headers
+     * @return boolean
+     */
+    public static function setProvidedMethod($params, $method, $headers)
+    {
+        if (!isset($headers['Authorization'])) {
+            return false;
+        }
+
+        list($jwt) = sscanf($headers['Authorization'], 'Bearer %s');
+
+        if (!$jwt) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array  $params  Request parameters
+     * @param  string $method  Request method
+     * @param  array  $headers  Request headers
      * @return array|FALSE Returns false on error or the user object on success
      */
     public static function check($params, $method, $headers)
@@ -108,7 +130,7 @@ class JWT extends \Phramework\Models\Authentication
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
 
             return $token->data;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             /*
              * the token was not able to be decoded.
              * this is likely because the signature was not able to be verified (tampered token)
@@ -122,6 +144,7 @@ class JWT extends \Phramework\Models\Authentication
      * @param  string $email    User's email
      * @param  string $password User's password
      * @return false  Returns false on failure
+     * @todo read nbf and exp from settings
      */
     public static function authenticate($email, $password)
     {
@@ -143,8 +166,6 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        header('Content-type: application/json');
-
         $settings = \Phramework\Phramework::getSetting('jwt');
         $secret     = $settings['secret'];
         $algorithm  = $settings['algorithm'];
@@ -152,7 +173,7 @@ class JWT extends \Phramework\Models\Authentication
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
-        $notBefore  = $issuedAt + 1;  //Adding seconds
+        $notBefore  = $issuedAt + 0;  //Adding seconds
         $expire     = $notBefore + 600; // Adding seconds
 
         /*
@@ -165,13 +186,12 @@ class JWT extends \Phramework\Models\Authentication
             'nbf'  => $notBefore,        // Not before
             'exp'  => $expire,           // Expire
             'data' => [                  // Data related to the signer user
-                'user_id' => $user['id'],
-                'id'      => $user['id']
+                'id' => $user['id']
             ]
         ];
 
         //copy user attributes to jwt's data
-        foreach (self::$attributes as $attrribute) {
+        foreach (self::$attributes as $attribute) {
             if (!isset($user[$attribute])) {
                 throw new \Phramework\Exceptions\ServerException(sprintf(
                     'Attribute "%s" is not set in user object',
@@ -187,8 +207,6 @@ class JWT extends \Phramework\Models\Authentication
             $algorithm //Algorithm used to sign the token
         );
 
-        $unencodedArray = ['jwt' => $jwt];
-
         //Call onAuthenticate callback if set
         if (self::$onAuthenticateCallback) {
             call_user_func(
@@ -198,8 +216,6 @@ class JWT extends \Phramework\Models\Authentication
             );
         }
 
-        echo json_encode($unencodedArray);
-
-        die();
+        return $jwt;
     }
 }

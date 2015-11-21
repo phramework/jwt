@@ -4,16 +4,17 @@ jwt authentication for Phramework
 ## Usage
 
 ```php
-  //Set custom authentication class
-  \Phramework\Phramework::setAuthenticationClass(
-      \Phramework\JWT\Models\JWT::class
-  );
+//Set authentication class
+\Phramework\Phramework::setAuthenticationClass(
+    \Phramework\JWT\Models\JWT::class
+);
 
-  \Phramework\JWT\Models\JWT::setGetUserByEmail(
-      [\MyApp\API\Models\User::class, 'getByEmailWithPassword']
-  );
+//Set method to fetch user object, including password attribute
+\Phramework\JWT\Models\JWT::setGetUserByEmail(
+    [\MyApp\API\Models\User::class, 'getByEmailWithPassword']
+);
 
-  \Phramework\JWT\Models\JWT::setAttributes(['user_type', 'email']);
+\Phramework\JWT\Models\JWT::setAttributes(['user_type', 'email']);
 ```
 
 ## Install
