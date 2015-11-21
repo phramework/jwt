@@ -19,14 +19,34 @@ namespace Phramework\JWT\Models;
 
 use \Phramework\Validate\Validate;
 
+/**
+ * JWT authentication implementation for phramework
+ * @license https://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
+ * @author Spafaridis Xenophon <nohponex@gmail.com>
+ */
 class JWT extends \Phramework\Models\Authentication
 {
+    /**
+     * @var callable
+     */
     protected static $getUserByEmail = null;
 
     /**
+     * @var string[]
+     */
+    protected static $attributes = [];
+
+    /**
+     * @var callable
+     */
+    protected static $onAuthenticateCallback = null;
+
+    /**
      * Set the method that accepts email and returns a user object
-     * containg a password
-     * @param [type] $callable [description]
+     * MUST containg a password, id, this method MUST also contain any other
+     * attribute specified in JWT::setAttributes method
+     * Method `array method($email)`
+     * @param callable $callable
      */
     public static function setGetUserByEmail($callable)
     {
@@ -35,6 +55,31 @@ class JWT extends \Phramework\Models\Authentication
         }
 
         self::$getUserByEmail = $callable;
+    }
+
+    /**
+     * Set attributes to be copied from user record.
+     * Both `user_id` and `id` will use the user's id attribute
+     * @param string[] $attributes
+     */
+    public static function setAttributes($attributes)
+    {
+        self::$attributes = $attributes;
+    }
+
+    /**
+     * Set a callback that will be executed after a successful authenticate
+     * execution, `jwt` token string and `data` array will be provided to the
+     * defined callback.
+     * @param callable $callable
+     */
+    public static function setOnAuthenticateCallback($callable)
+    {
+        if (!is_callable($callable)) {
+            throw new \Exception('Provided method is not callable');
+        }
+
+        self::$onAuthenticateCallback = $callable;
     }
 
     /**
@@ -60,27 +105,30 @@ class JWT extends \Phramework\Models\Authentication
         $algorithm  = $settings['algorithm'];
 
         try {
-
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
 
-            return [];
+            return $token->data;
         } catch (Exception $e) {
             /*
              * the token was not able to be decoded.
              * this is likely because the signature was not able to be verified (tampered token)
              */
-//            header('HTTP/1.0 401 Unauthorized');
             return false;
         }
-
-        //read from token
-        //return false;
     }
 
+    /**
+     * Authenticate a user using JWT authentication method
+     * @param  string $email    User's email
+     * @param  string $password User's password
+     * @return false  Returns false on failure
+     */
     public static function authenticate($email, $password)
     {
         if (!self::$getUserByEmail) {
-            throw new \Exception('getUserByEmail is not set');
+            throw new \Phramework\Exceptions\ServerException(
+                'getUserByEmail is not set'
+            );
         }
 
         $email = Validate::email($email);
@@ -104,11 +152,11 @@ class JWT extends \Phramework\Models\Authentication
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
-        $notBefore  = $issuedAt + 1;  //Adding 10 seconds
-        $expire     = $notBefore + 600; // Adding 60 seconds
+        $notBefore  = $issuedAt + 1;  //Adding seconds
+        $expire     = $notBefore + 600; // Adding seconds
 
         /*
-        * Create the token as an array
+         * Create the token as an array
         */
         $data = [
             'iat'  => $issuedAt,         // Issued at: time when the token was generated
@@ -117,18 +165,38 @@ class JWT extends \Phramework\Models\Authentication
             'nbf'  => $notBefore,        // Not before
             'exp'  => $expire,           // Expire
             'data' => [                  // Data related to the signer user
-                'user_id'  => $user['id'], // userid from the users table
-                'username' => $user['username'], // User name
+                'user_id' => $user['id'],
+                'id'      => $user['id']
             ]
         ];
 
+        //copy user attributes to jwt's data
+        foreach (self::$attributes as $attrribute) {
+            if (!isset($user[$attribute])) {
+                throw new \Phramework\Exceptions\ServerException(sprintf(
+                    'Attribute "%s" is not set in user object',
+                    $attribute
+                ));
+            }
+            $data['data'][$attribute] = $user[$attribute];
+        }
+
         $jwt = \Firebase\JWT\JWT::encode(
-            $data,      //Data to be encoded in the JWT
+            $data, //Data to be encoded in the JWT
             $secret, // The signing key
-            $algorithm  // Algorithm used to sign the token, see https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40#section-3
+            $algorithm //Algorithm used to sign the token
         );
 
         $unencodedArray = ['jwt' => $jwt];
+
+        //Call onAuthenticate callback if set
+        if (self::$onAuthenticateCallback) {
+            call_user_func(
+                $onAuthenticateCallback,
+                $jwt,
+                $data
+            );
+        }
 
         echo json_encode($unencodedArray);
 

@@ -1,6 +1,7 @@
 {
   "name": "phramework/jwt",
-  "description": "JWT Authorization for Phramework",
+  "description": "JWT authorization for Phramework",
+  "license": "Apache-2.0",
   "homepage": "https://nohponex.gr",
   "authors": [{
     "name": "Xenophon Spafaridis",
@@ -25,9 +26,9 @@
     "firebase/php-jwt": "^3.0"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "*"
+    "squizlabs/php_codesniffer": "*",
+    "phpunit/phpunit": "5.*"
   },
-  "minimum-stability": "alpha",
   "prefer-stable": true,
   "autoload": {
     "psr-4": {
