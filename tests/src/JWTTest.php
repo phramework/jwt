@@ -26,11 +26,18 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @var JWT
+     */
+    private $object;
+
+    /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      */
     protected function setUp()
     {
+        $this->object = new JWT();
+
         //NOTE, in order testAuthenticateSuccess to work all users must
         //have this password
         self::$users = [
@@ -87,7 +94,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phramework\JWT\Models\JWT::check
+     * @covers Phramework\Authentication\JWT\JWT::check
      */
     public function testCheckFailure()
     {
@@ -122,7 +129,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phramework\JWT\Models\JWT::authenticate
+     * @covers Phramework\Authentication\JWT\JWT::authenticate
      * @expectedException Exception
      */
     public function testAuthenticateExpectException()
@@ -138,7 +145,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phramework\JWT\Models\JWT::authenticate
+     * @covers Phramework\Authentication\JWT\JWT::authenticate
      */
     public function testAuthenticateFailure()
     {
@@ -168,7 +175,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phramework\JWT\Models\JWT::authenticate
+     * @covers Phramework\Authentication\JWT\JWT::authenticate
      */
     public function testAuthenticateSuccess()
     {
@@ -190,7 +197,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phramework\JWT\Models\JWT::check
+     * @covers Phramework\Authentication\JWT\JWT::check
      * @depends testAuthenticateSuccess
      */
     public function testCheckSuccess($indexToken)

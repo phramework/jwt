@@ -45,6 +45,7 @@ class JWT implements \Phramework\Authentication\IAuthentication
      * @param  string $method  Request method
      * @param  array  $headers  Request headers
      * @return boolean
+     * @todo check jwt token if is jwt
      */
     public function testProvidedMethod($params, $method, $headers)
     {
@@ -65,7 +66,7 @@ class JWT implements \Phramework\Authentication\IAuthentication
      * @param  array  $params  Request parameters
      * @param  string $method  Request method
      * @param  array  $headers  Request headers
-     * @return array|FALSE Returns false on error or the user object on success
+     * @return object|FALSE Returns false on error or the user object on success
      */
     public function check($params, $method, $headers)
     {
@@ -162,9 +163,9 @@ class JWT implements \Phramework\Authentication\IAuthentication
         );
 
         //Call onAuthenticate callback if set
-        if (($cb = Manager::getOnAuthenticateCallback()) !== null) {
+        if (($callback = Manager::getOnAuthenticateCallback()) !== null) {
             call_user_func(
-                $cb,
+                $callback,
                 $jwt,
                 $data
             );
