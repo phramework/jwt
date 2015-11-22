@@ -1,23 +1,30 @@
 # jwt
-JWT authorization wrapper for Phramework, using firebase/php-jwt
+JWT authorization wrapper for phramework, using firebase/php-jwt
 
 ## Usage
+Require package
+
+```
+composer require phramework/jwt
+```
 
 ```php
 //Set authentication class
-\Phramework\Phramework::setAuthenticationClass(
-    \Phramework\JWT\Models\JWT::class
+\Phramework\Authentication\Manager::register(
+    \Phramework\Authentication\JWT::class
 );
 
 //Set method to fetch user object, including password attribute
-\Phramework\JWT\Models\JWT::setUserGetByEmailMethod(
+\Phramework\Authentication\Manager::setUserGetByEmailMethod(
     [\MyApp\API\Models\User::class, 'getByEmailWithPassword']
 );
 
-\Phramework\JWT\Models\JWT::setAttributes(['user_type', 'email']);
+\Phramework\Authentication\Manager::setAttributes(
+    ['user_type', 'email']
+);
 ```
 
-## Install
+## Install dependencies
 
 ```bash
 composer update
