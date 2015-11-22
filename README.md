@@ -1,5 +1,5 @@
 # jwt
-jwt authentication for Phramework
+JWT authorization wrapper for Phramework, using firebase/php-jwt
 
 ## Usage
 
