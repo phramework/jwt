@@ -1,6 +1,6 @@
 <?php
 
-namespace Phramework\JWT\Models;
+namespace Phramework\Authentication\JWT;
 
 use \Phramework\Phramework;
 
@@ -63,16 +63,16 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         );
 
         //Set authentication class
-        Phramework::setAuthenticationClass(
+        \Phramework\Authentication\Manager::register(
             JWT::class
         );
 
         //Set method to fetch user object, including password attribute
-        JWT::setUserGetByEmailMethod(
+        \Phramework\Authentication\Manager::setUserGetByEmailMethod(
             [JWTTest::class, 'getByEmailWithPassword']
         );
 
-        JWT::setAttributes(
+        \Phramework\Authentication\Manager::setAttributes(
             ['user_type', 'email']
         );
     }
@@ -127,7 +127,14 @@ class JWTTest extends \PHPUnit_Framework_TestCase
      */
     public function testAuthenticateExpectException()
     {
-        JWT::authenticate('wrongEmailType', '123456');
+        JWT::authenticate(
+            [
+                'email' => 'wrongEmailType',
+                'password' => '123456'
+            ],
+            [Phramework::METHOD_POST],
+            []
+        );
     }
 
     /**
@@ -136,12 +143,26 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     public function testAuthenticateFailure()
     {
         $this->assertFalse(
-            JWT::authenticate('not@found.com', '123456'),
+            JWT::authenticate(
+                [
+                    'email' => 'not@found.com',
+                    'password' => '123456'
+                ],
+                Phramework::METHOD_POST,
+                []
+            ),
             'Expect false, sinse user email doesn`t exist'
         );
 
         $this->assertFalse(
-            JWT::authenticate(self::$users[0]['email'], 'wrong'),
+            JWT::authenticate(
+                [
+                    'email' => self::$users[0]['email'],
+                    'password' => 'wrong'
+                ],
+                Phramework::METHOD_POST,
+                []
+            ),
             'Expect false, sinse user password is wrong'
         );
     }
@@ -155,8 +176,12 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         $index = 0; //rand(0, count(self::$users) - 1);
 
         $token = JWT::authenticate(
-            self::$users[$index]['email'],
-            '123456' //Since password is the same for all of them
+            [
+                'email' => self::$users[$index]['email'],
+                'password' => '123456' //Since password is the same for all of them
+            ],
+            Phramework::METHOD_POST,
+            []
         );
 
         $this->assertInternalType('string', $token);

@@ -29,7 +29,7 @@
   "prefer-stable": true,
   "autoload": {
     "psr-4": {
-      "Phramework\\JWT\\": "src"
+      "Phramework\\Authentication\\JWT\\": "src"
     }
   },
   "autoload-dev": {},

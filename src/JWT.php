@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-namespace Phramework\JWT\Models;
+namespace Phramework\Authentication\JWT;
 
+use \Phramework\Phramework;
 use \Phramework\Validate\Validate;
+use \Phramework\Authentication\Manager;
 
 /**
  * JWT authentication implementation for phramework
@@ -34,63 +36,8 @@ use \Phramework\Validate\Validate;
  * @uses password_verify to verify user's password
  *
  */
-class JWT extends \Phramework\Models\Authentication
+class JWT implements \Phramework\Authentication\IAuthentication
 {
-    /**
-     * MUST be set
-     * @var callable
-     */
-    protected static $userGetByEmailMethod = null;
-
-    /**
-     * @var string[]
-     */
-    protected static $attributes = [];
-
-    /**
-     * @var callable|null
-     */
-    protected static $onAuthenticateCallback = null;
-
-    /**
-     * Set the method that accepts email and returns a user object
-     * MUST containg a password, id, this method MUST also contain any other
-     * attribute specified in JWT::setAttributes method
-     * @param callable $callable
-     */
-    public static function setUserGetByEmailMethod($callable)
-    {
-        if (!is_callable($callable)) {
-            throw new \Exception('Provided method is not callable');
-        }
-
-        self::$userGetByEmailMethod = $callable;
-    }
-
-    /**
-     * Set attributes to be copied from user record.
-     * Both `user_id` and `id` will use the user's id attribute
-     * @param string[] $attributes
-     */
-    public static function setAttributes($attributes)
-    {
-        self::$attributes = $attributes;
-    }
-
-    /**
-     * Set a callback that will be executed after a successful authenticate
-     * execution, `jwt` token string and `data` array will be provided to the
-     * defined callback.
-     * @param callable $callable
-     */
-    public static function setOnAuthenticateCallback($callable)
-    {
-        if (!is_callable($callable)) {
-            throw new \Exception('Provided method is not callable');
-        }
-
-        self::$onAuthenticateCallback = $callable;
-    }
 
     /**
      * Test if current request holds authoratation data
@@ -99,7 +46,7 @@ class JWT extends \Phramework\Models\Authentication
      * @param  array  $headers  Request headers
      * @return boolean
      */
-    public static function setProvidedMethod($params, $method, $headers)
+    public function testProvidedMethod($params, $method, $headers)
     {
         if (!isset($headers['Authorization'])) {
             return false;
@@ -120,7 +67,7 @@ class JWT extends \Phramework\Models\Authentication
      * @param  array  $headers  Request headers
      * @return array|FALSE Returns false on error or the user object on success
      */
-    public static function check($params, $method, $headers)
+    public function check($params, $method, $headers)
     {
         if (!isset($headers['Authorization'])) {
             return false;
@@ -132,12 +79,12 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');
-        $algorithm  = \Phramework\Phramework::getSetting('jwt', 'algorithm');
+        $secret     = Phramework::getSetting('jwt', 'secret');
+        $algorithm  = Phramework::getSetting('jwt', 'algorithm');
 
         try {
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
-            
+
             return $token->data;
         } catch (\Exception $e) {
             /*
@@ -150,22 +97,17 @@ class JWT extends \Phramework\Models\Authentication
 
     /**
      * Authenticate a user using JWT authentication method
-     * @param  string $email    User's email
-     * @param  string $password User's password
+     * @param  array  $params  Request parameters
+     * @param  string $method  Request method
+     * @param  array  $headers  Request headers
      * @return false  Returns false on failure
-     * @todo read nbf and exp from settings
      */
-    public static function authenticate($email, $password)
+    public function authenticate($params, $method, $headers)
     {
-        if (!self::$userGetByEmailMethod) {
-            throw new \Phramework\Exceptions\ServerException(
-                'getUserByEmail is not set'
-            );
-        }
+        $email = Validate::email($params['email']);
+        $password = $params['password'];
 
-        $email = Validate::email($email);
-
-        $user = call_user_func(self::$userGetByEmailMethod, $email);
+        $user = call_user_func(Manager::getUserGetByEmailMethod(), $email);
 
         if (!$user) {
             return false;
@@ -175,18 +117,18 @@ class JWT extends \Phramework\Models\Authentication
             return false;
         }
 
-        $secret     = \Phramework\Phramework::getSetting('jwt', 'secret');
-        $algorithm  = \Phramework\Phramework::getSetting('jwt', 'algorithm');
-        $serverName = \Phramework\Phramework::getSetting('jwt', 'server');
+        $secret     = Phramework::getSetting('jwt', 'secret');
+        $algorithm  = Phramework::getSetting('jwt', 'algorithm');
+        $serverName = Phramework::getSetting('jwt', 'server');
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
         //Adding seconds
         $notBefore  = $issuedAt
-            + \Phramework\Phramework::getSetting('jwt', 'nbf', 0);
+            + Phramework::getSetting('jwt', 'nbf', 0);
         //Adding seconds
         $expire     = $notBefore
-            + \Phramework\Phramework::getSetting('jwt', 'exp', 3600);
+            + Phramework::getSetting('jwt', 'exp', 3600);
 
         /*
          * Create the token as an array
@@ -203,7 +145,7 @@ class JWT extends \Phramework\Models\Authentication
         ];
 
         //copy user attributes to jwt's data
-        foreach (self::$attributes as $attribute) {
+        foreach (Manager::getAttributes() as $attribute) {
             if (!isset($user[$attribute])) {
                 throw new \Phramework\Exceptions\ServerException(sprintf(
                     'Attribute "%s" is not set in user object',
@@ -220,9 +162,9 @@ class JWT extends \Phramework\Models\Authentication
         );
 
         //Call onAuthenticate callback if set
-        if (self::$onAuthenticateCallback) {
+        if (($cb = Manager::getOnAuthenticateCallback()) !== null) {
             call_user_func(
-                $onAuthenticateCallback,
+                $cb,
                 $jwt,
                 $data
             );
