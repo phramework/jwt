@@ -1,6 +1,6 @@
 {
   "name": "phramework/jwt",
-  "description": "JWT authorization wrapper for Phramework, using firebase/php-jwt",
+  "description": "JWT authentication wrapper for phramework, using firebase/php-jwt",
   "license": "Apache-2.0",
   "homepage": "https://github.com/Phramework",
   "authors": [{
@@ -39,7 +39,6 @@
   },
   "scripts": {
     "test": [
-      "echo \"$(tput setaf 1)test routine$(tput sgr 0)\"",
       "find src/ -name '*.php' -print0 | xargs -0 -L 1 php -l",
       "find tests/ -name '*.php' -print0 | xargs -0 -L 1 php -l",
       "phpunit"

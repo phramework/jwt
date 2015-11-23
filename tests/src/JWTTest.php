@@ -82,6 +82,12 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         \Phramework\Authentication\Manager::setAttributes(
             ['user_type', 'email']
         );
+
+        \Phramework\Authentication\Manager::setOnAuthenticateCallback(
+            function ($params) {
+                //var_dump($params);
+            }
+        );
     }
 
     /**
@@ -99,25 +105,25 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     public function testCheckFailure()
     {
 
-        $this->assertFalse(JWT::check(
+        $this->assertFalse($this->object->check(
             [],
             Phramework::METHOD_GET,
             []
         ), 'Expect false, since Authorization header is not provided');
 
-        $this->assertFalse(JWT::check(
+        $this->assertFalse($this->object->check(
             [],
             Phramework::METHOD_GET,
             ['Authorization' => 'Basic ABCDEF']
         ), 'Expect false, since Authorization header is not Bearer');
 
-        $this->assertFalse(JWT::check(
+        $this->assertFalse($this->object->check(
             [],
             Phramework::METHOD_GET,
             ['Authorization' => 'Bearer xsadsadas']
         ), 'Expect false, since token makes no sense');
 
-        $this->assertFalse(JWT::check(
+        $this->assertFalse($this->object->check(
             [],
             Phramework::METHOD_GET,
             [
@@ -129,12 +135,42 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Phramework\Authentication\JWT\JWT::testProvidedMethod
+     */
+    public function testTestProvidedMethodFailure()
+    {
+        $this->assertFalse($this->object->testProvidedMethod(
+            [],
+            Phramework::METHOD_GET,
+            []
+        ), 'Expect false, since Authorization header is not provided');
+
+        $this->assertFalse($this->object->testProvidedMethod(
+            [],
+            Phramework::METHOD_GET,
+            ['Authorization' => 'Basic ABCDEF']
+        ), 'Expect false, since Authorization header is not Bearer');
+    }
+
+    /**
+     * @covers Phramework\Authentication\JWT\JWT::testProvidedMethod
+     */
+    public function testTestProvidedMethodSuccess()
+    {
+        $this->assertTrue($this->object->testProvidedMethod(
+            [],
+            Phramework::METHOD_GET,
+            ['Authorization' => 'Bearer zm9ocG9uZXsg6MTIzNDU2Nzh4WA==']
+        ), 'Expect true, even though credentials are not correct');
+    }
+
+    /**
      * @covers Phramework\Authentication\JWT\JWT::authenticate
      * @expectedException Exception
      */
     public function testAuthenticateExpectException()
     {
-        JWT::authenticate(
+        $this->object->authenticate(
             [
                 'email' => 'wrongEmailType',
                 'password' => '123456'
@@ -150,7 +186,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     public function testAuthenticateFailure()
     {
         $this->assertFalse(
-            JWT::authenticate(
+            $this->object->authenticate(
                 [
                     'email' => 'not@found.com',
                     'password' => '123456'
@@ -162,7 +198,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertFalse(
-            JWT::authenticate(
+            $this->object->authenticate(
                 [
                     'email' => self::$users[0]['email'],
                     'password' => 'wrong'
@@ -182,7 +218,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
         //Pick a random user index
         $index = 0; //rand(0, count(self::$users) - 1);
 
-        $token = JWT::authenticate(
+        $token = $this->object->authenticate(
             [
                 'email' => self::$users[$index]['email'],
                 'password' => '123456' //Since password is the same for all of them

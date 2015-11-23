@@ -105,15 +105,28 @@ class JWT implements \Phramework\Authentication\IAuthentication
      */
     public function authenticate($params, $method, $headers)
     {
-        $email = Validate::email($params['email']);
-        $password = $params['password'];
+        //Require email and password set in params
+        $validationModel = new \Phramework\Validate\Object(
+            [
+                'email'    => new \Phramework\Validate\Email(3, 100),
+                'password' => new \Phramework\Validate\String(3, 128, null, true),
+            ],
+            ['email', 'password']
+        );
 
+        $parsed = $validationModel->parse($params);
+
+        $email = $parsed->email;
+        $password = $parsed->password;
+
+        //Get user object
         $user = call_user_func(Manager::getUserGetByEmailMethod(), $email);
 
         if (!$user) {
             return false;
         }
 
+        // Verify user's password (password is stored as hash)
         if (!password_verify($password, $user['password'])) {
             return false;
         }
@@ -124,11 +137,9 @@ class JWT implements \Phramework\Authentication\IAuthentication
 
         $tokenId    = base64_encode(\mcrypt_create_iv(32));
         $issuedAt   = time();
-        //Adding seconds
-        $notBefore  = $issuedAt
+        $notBefore  = $issuedAt //Adding seconds
             + Phramework::getSetting('jwt', 'nbf', 0);
-        //Adding seconds
-        $expire     = $notBefore
+        $expire     = $notBefore //Adding seconds
             + Phramework::getSetting('jwt', 'exp', 3600);
 
         /*
@@ -166,8 +177,8 @@ class JWT implements \Phramework\Authentication\IAuthentication
         if (($callback = Manager::getOnAuthenticateCallback()) !== null) {
             call_user_func(
                 $callback,
-                $jwt,
-                $data
+                $data,
+                $jwt
             );
         }
 
