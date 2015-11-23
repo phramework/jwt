@@ -11,7 +11,7 @@ composer require phramework/jwt
 ```php
 //Set authentication class
 \Phramework\Authentication\Manager::register(
-    \Phramework\Authentication\JWT::class
+    \Phramework\Authentication\JWT\JWT::class
 );
 
 //Set method to fetch user object, including password attribute

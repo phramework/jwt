@@ -86,6 +86,14 @@ class JWT implements \Phramework\Authentication\IAuthentication
         try {
             $token = \Firebase\JWT\JWT::decode($jwt, $secret, [$algorithm]);
 
+            //Call onAuthenticate callback if set
+            if (($callback = Manager::getOnCheckCallback()) !== null) {
+                call_user_func(
+                    $callback,
+                    $token->data
+                );
+            }
+
             return $token->data;
         } catch (\Exception $e) {
             /*

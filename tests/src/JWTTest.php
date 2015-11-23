@@ -83,7 +83,19 @@ class JWTTest extends \PHPUnit_Framework_TestCase
             ['user_type', 'email']
         );
 
+        \Phramework\Authentication\Manager::setOnCheckCallback(
+            /**
+             * @param object $data User data object
+             */
+            function ($params) {
+                //var_dump($params);
+            }
+        );
+
         \Phramework\Authentication\Manager::setOnAuthenticateCallback(
+            /**
+             * @param object $data User data object
+             */
             function ($params) {
                 //var_dump($params);
             }
