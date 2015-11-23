@@ -238,7 +238,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
             Phramework::METHOD_POST,
             []
         );
-        
+
         $this->assertInternalType('object', $user, 'Expect an object');
 
         $this->assertObjectHasAttribute('id', $user);
@@ -261,7 +261,7 @@ class JWTTest extends \PHPUnit_Framework_TestCase
     {
         list($index, $user, $token) = $indexToken;
 
-        $user = JWT::check(
+        $user = $this->object->check(
             [],
             Phramework::METHOD_GET,
             ['Authorization' => 'Bearer ' . $token]

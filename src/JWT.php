@@ -109,7 +109,7 @@ class JWT implements \Phramework\Authentication\IAuthentication
      * @param  array  $params  Request parameters
      * @param  string $method  Request method
      * @param  array  $headers  Request headers
-     * @return false  Returns false on failure
+     * @return false|array  Returns false on failure
      */
     public function authenticate($params, $method, $headers)
     {
