@@ -185,11 +185,11 @@ class JWT implements \Phramework\Authentication\IAuthentication
         if (($callback = Manager::getOnAuthenticateCallback()) !== null) {
             call_user_func(
                 $callback,
-                $data,
+                (object)$data['data'],
                 $jwt
             );
         }
 
-        return $jwt;
+        return [(object)$data['data'], $jwt];
     }
 }
