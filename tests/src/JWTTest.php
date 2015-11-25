@@ -116,7 +116,6 @@ class JWTTest extends \PHPUnit_Framework_TestCase
      */
     public function testCheckFailure()
     {
-
         $this->assertFalse($this->object->check(
             [],
             Phramework::METHOD_GET,

@@ -1,6 +1,8 @@
 # jwt
 JWT authorization wrapper for phramework, using firebase/php-jwt
 
+[![Build Status](https://travis-ci.org/phramework/jwt.svg?branch=master)](https://travis-ci.org/phramework/jwt)
+
 ## Usage
 Require package
 
