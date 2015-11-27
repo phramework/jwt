@@ -114,10 +114,10 @@ class JWT implements \Phramework\Authentication\IAuthentication
     public function authenticate($params, $method, $headers)
     {
         //Require email and password set in params
-        $validationModel = new \Phramework\Validate\Object(
+        $validationModel = new \Phramework\Validate\ObjectValidator(
             [
-                'email'    => new \Phramework\Validate\Email(3, 100),
-                'password' => new \Phramework\Validate\String(3, 128, null, true),
+                'email'    => new \Phramework\Validate\EmailValidator(3, 100),
+                'password' => new \Phramework\Validate\StringValidator(3, 128, null, true),
             ],
             ['email', 'password']
         );
