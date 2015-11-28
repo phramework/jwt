@@ -31,7 +31,7 @@ use \Phramework\Authentication\Manager;
  *   - [nbf] Not before offset in seconds, default 0
  *   - [exp] Expiration offset in seconds, default 3600
  * @license https://www.apache.org/licenses/LICENSE-2.0 Apache-2.0
- * @author Spafaridis Xenophon <nohponex@gmail.com>
+ * @author Xenofon Spafaridis <nohponex@gmail.com>
  * @uses \Firebase\JWT\JWT
  * @uses password_verify to verify user's password
  *
