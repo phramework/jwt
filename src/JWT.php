@@ -34,6 +34,8 @@ use \Phramework\Authentication\Manager;
  * @author Xenofon Spafaridis <nohponex@gmail.com>
  * @uses \Firebase\JWT\JWT
  * @uses password_verify to verify user's password
+ * @since 0.0.0
+ * @version 1.0.0
  *
  */
 class JWT implements \Phramework\Authentication\IAuthentication
@@ -143,7 +145,7 @@ class JWT implements \Phramework\Authentication\IAuthentication
         $algorithm  = Phramework::getSetting('jwt', 'algorithm');
         $serverName = Phramework::getSetting('jwt', 'server');
 
-        $tokenId    = base64_encode(\mcrypt_create_iv(32));
+        $tokenId    = base64_encode(\random_bytes(32));
         $issuedAt   = time();
         $notBefore  = $issuedAt //Adding seconds
             + Phramework::getSetting('jwt', 'nbf', 0);
@@ -185,11 +187,11 @@ class JWT implements \Phramework\Authentication\IAuthentication
         if (($callback = Manager::getOnAuthenticateCallback()) !== null) {
             call_user_func(
                 $callback,
-                (object)$data['data'],
+                (object) $data['data'],
                 $jwt
             );
         }
 
-        return [(object)$data['data'], $jwt];
+        return [(object) $data['data'], $jwt];
     }
 }
