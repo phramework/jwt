@@ -14,7 +14,7 @@
     "phramework/phramework": "^1.0",
     "ext-json": "*",
     "ext-mcrypt": "*",
-    "firebase/php-jwt": "^3.0"
+    "firebase/php-jwt": "^4.0"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "*",
