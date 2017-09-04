@@ -3,8 +3,9 @@
 namespace Phramework\Authentication\JWT;
 
 use \Phramework\Phramework;
+use PHPUnit\Framework\TestCase;
 
-class JWTTest extends \PHPUnit_Framework_TestCase
+class JWTTest extends TestCase
 {
     protected static $users = [];
 
