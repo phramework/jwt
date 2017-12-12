@@ -13,7 +13,6 @@
     "php": ">=7",
     "phramework/phramework": "^1.0",
     "ext-json": "*",
-    "ext-mcrypt": "*",
     "firebase/php-jwt": "^5.0"
   },
   "require-dev": {
